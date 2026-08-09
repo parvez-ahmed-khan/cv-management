@@ -1,6 +1,7 @@
 let currentStep = 1;
-const totalSteps = 6;
+const totalSteps = 7;
 let currentUser = null;
+let photoData = "";
 
 const nextBtn = document.getElementById('nextBtn');
 const prevBtn = document.getElementById('prevBtn');
@@ -45,9 +46,29 @@ document.querySelectorAll('.template-card').forEach(card => {
   });
 });
 
+document.getElementById('photoInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (file.size > 500 * 1024) {
+    alert("Please choose an image smaller than 500 KB.");
+    e.target.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    photoData = evt.target.result;
+    document.getElementById('photoPreview').innerHTML = '<img src="' + photoData + '" alt="photo">';
+    renderPreview();
+  };
+  reader.readAsDataURL(file);
+});
+
 function collectFormData() {
   return {
     template: document.getElementById('selectedTemplate').value,
+    photo: photoData,
     fullName: document.getElementById('fullName').value,
     email: document.getElementById('cvEmail').value,
     phone: document.getElementById('phone').value,
@@ -62,11 +83,20 @@ function collectFormData() {
     experience: {
       jobTitle: document.getElementById('jobTitle').value,
       company: document.getElementById('company').value,
+      period: document.getElementById('jobPeriod').value,
       description: document.getElementById('jobDesc').value
     },
-    project: {
-      name: document.getElementById('projectName').value,
-      description: document.getElementById('projectDesc').value
+    experience2: {
+      jobTitle: document.getElementById('jobTitle2').value,
+      company: document.getElementById('company2').value,
+      period: document.getElementById('jobPeriod2').value,
+      description: document.getElementById('jobDesc2').value
+    },
+    reference: {
+      name: document.getElementById('refName').value,
+      title: document.getElementById('refTitle').value,
+      email: document.getElementById('refEmail').value,
+      phone: document.getElementById('refPhone').value
     }
   };
 }
@@ -76,32 +106,118 @@ function renderPreview() {
   const sheet = document.getElementById('livePreview');
 
   if (!cv.fullName && !cv.email) {
+    sheet.className = 'cv-sheet';
     sheet.innerHTML = '<p style="text-align:center; color:#999;">Your CV preview will appear here as you type.</p>';
     return;
   }
 
   sheet.className = 'cv-sheet template-' + cv.template;
 
+  if (cv.template === 'sidebar') {
+    sheet.innerHTML = buildSidebarHTML(cv);
+  } else {
+    sheet.innerHTML = buildStandardHTML(cv);
+  }
+}
+
+function buildStandardHTML(cv) {
   const skillsList = cv.skills
     ? cv.skills.split(',').map(s => '<span class="skill-tag">' + s.trim() + '</span>').join('')
     : '';
 
-  sheet.innerHTML =
-    '<div class="cv-header">' +
-      '<h1>' + (cv.fullName || 'Your Name') + '</h1>' +
-      '<p>' + (cv.email || '') + (cv.phone ? ' | ' + cv.phone : '') + (cv.address ? ' | ' + cv.address : '') + '</p>' +
-    '</div>' +
-    (cv.summary ? '<div class="cv-section"><h3>Summary</h3><p>' + cv.summary + '</p></div>' : '') +
-    ((cv.education.degree || cv.education.institution) ?
-      '<div class="cv-section"><h3>Education</h3><p><strong>' + (cv.education.degree || '') + '</strong></p><p>' +
-      (cv.education.institution || '') + (cv.education.year ? ' (' + cv.education.year + ')' : '') + '</p></div>' : '') +
-    (skillsList ? '<div class="cv-section"><h3>Skills</h3><div class="skills-wrap">' + skillsList + '</div></div>' : '') +
-    (cv.experience.jobTitle ?
-      '<div class="cv-section"><h3>Experience</h3><p><strong>' + cv.experience.jobTitle + '</strong>' +
-      (cv.experience.company ? ' - ' + cv.experience.company : '') + '</p><p>' + (cv.experience.description || '') + '</p></div>' : '') +
-    (cv.project.name ?
-      '<div class="cv-section"><h3>Projects</h3><p><strong>' + cv.project.name + '</strong></p><p>' +
-      (cv.project.description || '') + '</p></div>' : '');
+  let html = '<div class="cv-header"><h1>' + (cv.fullName || 'Your Name') + '</h1><p>' +
+    (cv.email || '') + (cv.phone ? ' | ' + cv.phone : '') + (cv.address ? ' | ' + cv.address : '') + '</p></div>';
+
+  if (cv.summary) html += '<div class="cv-section"><h3>Summary</h3><p>' + cv.summary + '</p></div>';
+
+  if (cv.education.degree || cv.education.institution) {
+    html += '<div class="cv-section"><h3>Education</h3><p><strong>' + (cv.education.degree || '') +
+      '</strong></p><p>' + (cv.education.institution || '') +
+      (cv.education.year ? ' (' + cv.education.year + ')' : '') + '</p></div>';
+  }
+
+  if (skillsList) html += '<div class="cv-section"><h3>Skills</h3><div class="skills-wrap">' + skillsList + '</div></div>';
+
+  if (cv.experience.jobTitle) {
+    html += '<div class="cv-section"><h3>Experience</h3><p><strong>' + cv.experience.jobTitle + '</strong>' +
+      (cv.experience.company ? ' - ' + cv.experience.company : '') +
+      (cv.experience.period ? ' (' + cv.experience.period + ')' : '') + '</p><p>' + (cv.experience.description || '') + '</p></div>';
+  }
+
+  if (cv.experience2.jobTitle) {
+    html += '<div class="cv-section"><p><strong>' + cv.experience2.jobTitle + '</strong>' +
+      (cv.experience2.company ? ' - ' + cv.experience2.company : '') +
+      (cv.experience2.period ? ' (' + cv.experience2.period + ')' : '') + '</p><p>' + (cv.experience2.description || '') + '</p></div>';
+  }
+
+  if (cv.reference.name) {
+    html += '<div class="cv-section"><h3>Reference</h3><p><strong>' + cv.reference.name + '</strong>' +
+      (cv.reference.title ? ' - ' + cv.reference.title : '') + '</p><p>' +
+      (cv.reference.email || '') + (cv.reference.phone ? ' | ' + cv.reference.phone : '') + '</p></div>';
+  }
+
+  return html;
+}
+
+function buildSidebarHTML(cv) {
+  const skillsItems = cv.skills
+    ? cv.skills.split(',').map(s => '<li>' + s.trim() + '</li>').join('')
+    : '';
+
+  let leftCol = '<div class="sidebar-left">';
+  leftCol += '<div class="sidebar-photo">' + (cv.photo ? '<img src="' + cv.photo + '" alt="photo">' : '<div class="sidebar-photo-placeholder">Photo</div>') + '</div>';
+
+  leftCol += '<div class="sidebar-block"><h4>Contact</h4>';
+  if (cv.phone) leftCol += '<p>' + cv.phone + '</p>';
+  if (cv.email) leftCol += '<p>' + cv.email + '</p>';
+  if (cv.address) leftCol += '<p>' + cv.address + '</p>';
+  leftCol += '</div>';
+
+  if (skillsItems) {
+    leftCol += '<div class="sidebar-block"><h4>Skills</h4><ul>' + skillsItems + '</ul></div>';
+  }
+
+  if (cv.education.degree || cv.education.institution) {
+    leftCol += '<div class="sidebar-block"><h4>Education</h4><p><strong>' + (cv.education.degree || '') + '</strong></p><p>' +
+      (cv.education.institution || '') + (cv.education.year ? ' - ' + cv.education.year : '') + '</p></div>';
+  }
+
+  if (cv.reference.name) {
+    leftCol += '<div class="sidebar-block"><h4>Reference</h4><p><strong>' + cv.reference.name + '</strong></p>' +
+      (cv.reference.title ? '<p>' + cv.reference.title + '</p>' : '') +
+      (cv.reference.email ? '<p>' + cv.reference.email + '</p>' : '') +
+      (cv.reference.phone ? '<p>' + cv.reference.phone + '</p>' : '') + '</div>';
+  }
+
+  leftCol += '</div>';
+
+  let rightCol = '<div class="sidebar-right">';
+  rightCol += '<h1>' + (cv.fullName || 'Your Name') + '</h1>';
+
+  if (cv.summary) {
+    rightCol += '<div class="cv-section"><h3>Summary</h3><p>' + cv.summary + '</p></div>';
+  }
+
+  if (cv.experience.jobTitle || cv.experience2.jobTitle) {
+    rightCol += '<div class="cv-section"><h3>Work History</h3>';
+    if (cv.experience.jobTitle) {
+      rightCol += '<div class="sidebar-job"><p class="job-title">' + cv.experience.jobTitle +
+        (cv.experience.period ? ' <span class="job-period">' + cv.experience.period + '</span>' : '') + '</p>' +
+        '<p class="job-company">' + (cv.experience.company || '') + '</p>' +
+        '<p>' + (cv.experience.description || '') + '</p></div>';
+    }
+    if (cv.experience2.jobTitle) {
+      rightCol += '<div class="sidebar-job"><p class="job-title">' + cv.experience2.jobTitle +
+        (cv.experience2.period ? ' <span class="job-period">' + cv.experience2.period + '</span>' : '') + '</p>' +
+        '<p class="job-company">' + (cv.experience2.company || '') + '</p>' +
+        '<p>' + (cv.experience2.description || '') + '</p></div>';
+    }
+    rightCol += '</div>';
+  }
+
+  rightCol += '</div>';
+
+  return leftCol + rightCol;
 }
 
 document.getElementById('cvForm').addEventListener('input', renderPreview);
@@ -131,9 +247,21 @@ auth.onAuthStateChanged((user) => {
     document.getElementById('skills').value = cv.skills || '';
     document.getElementById('jobTitle').value = (cv.experience && cv.experience.jobTitle) || '';
     document.getElementById('company').value = (cv.experience && cv.experience.company) || '';
+    document.getElementById('jobPeriod').value = (cv.experience && cv.experience.period) || '';
     document.getElementById('jobDesc').value = (cv.experience && cv.experience.description) || '';
-    document.getElementById('projectName').value = (cv.project && cv.project.name) || '';
-    document.getElementById('projectDesc').value = (cv.project && cv.project.description) || '';
+    document.getElementById('jobTitle2').value = (cv.experience2 && cv.experience2.jobTitle) || '';
+    document.getElementById('company2').value = (cv.experience2 && cv.experience2.company) || '';
+    document.getElementById('jobPeriod2').value = (cv.experience2 && cv.experience2.period) || '';
+    document.getElementById('jobDesc2').value = (cv.experience2 && cv.experience2.description) || '';
+    document.getElementById('refName').value = (cv.reference && cv.reference.name) || '';
+    document.getElementById('refTitle').value = (cv.reference && cv.reference.title) || '';
+    document.getElementById('refEmail').value = (cv.reference && cv.reference.email) || '';
+    document.getElementById('refPhone').value = (cv.reference && cv.reference.phone) || '';
+
+    if (cv.photo) {
+      photoData = cv.photo;
+      document.getElementById('photoPreview').innerHTML = '<img src="' + photoData + '" alt="photo">';
+    }
 
     const tmpl = cv.template || 'modern';
     document.getElementById('selectedTemplate').value = tmpl;

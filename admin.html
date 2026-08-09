@@ -31,7 +31,6 @@
         return;
       }
 
-      // Check if this user is an admin
       db.collection('users').doc(user.uid).get().then((userDoc) => {
         const isAdmin = userDoc.exists && userDoc.data().isAdmin === true;
 

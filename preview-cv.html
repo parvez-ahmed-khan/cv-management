@@ -45,38 +45,102 @@
         const cv = doc.data();
         sheet.className = 'cv-sheet template-' + (cv.template || 'modern');
 
-        const skillsList = cv.skills ? cv.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : '';
+        if (cv.template === 'sidebar') {
+          const skillsItems = cv.skills ? cv.skills.split(',').map(s => `<li>${s.trim()}</li>`).join('') : '';
 
-        sheet.innerHTML = `
-          <div class="cv-header">
-            <h1>${cv.fullName || ''}</h1>
-            <p>${cv.email || ''} | ${cv.phone || ''} | ${cv.address || ''}</p>
-          </div>
+          let leftCol = `<div class="sidebar-left">
+            <div class="sidebar-photo">${cv.photo ? `<img src="${cv.photo}" alt="photo">` : `<div class="sidebar-photo-placeholder">Photo</div>`}</div>
+            <div class="sidebar-block"><h4>Contact</h4>
+              ${cv.phone ? `<p>${cv.phone}</p>` : ''}
+              ${cv.email ? `<p>${cv.email}</p>` : ''}
+              ${cv.address ? `<p>${cv.address}</p>` : ''}
+            </div>
+            ${skillsItems ? `<div class="sidebar-block"><h4>Skills</h4><ul>${skillsItems}</ul></div>` : ''}
+            ${(cv.education && (cv.education.degree || cv.education.institution)) ? `
+            <div class="sidebar-block"><h4>Education</h4>
+              <p><strong>${cv.education.degree || ''}</strong></p>
+              <p>${cv.education.institution || ''} ${cv.education.year ? '- ' + cv.education.year : ''}</p>
+            </div>` : ''}
+            ${(cv.reference && cv.reference.name) ? `
+            <div class="sidebar-block"><h4>Reference</h4>
+              <p><strong>${cv.reference.name}</strong></p>
+              ${cv.reference.title ? `<p>${cv.reference.title}</p>` : ''}
+              ${cv.reference.email ? `<p>${cv.reference.email}</p>` : ''}
+              ${cv.reference.phone ? `<p>${cv.reference.phone}</p>` : ''}
+            </div>` : ''}
+          </div>`;
 
-          ${cv.summary ? `<div class="cv-section"><h3>Summary</h3><p>${cv.summary}</p></div>` : ''}
+          let rightCol = `<div class="sidebar-right"><h1>${cv.fullName || ''}</h1>`;
+          if (cv.summary) rightCol += `<div class="cv-section"><h3>Summary</h3><p>${cv.summary}</p></div>`;
 
-          <div class="cv-section">
-            <h3>Education</h3>
-            <p><strong>${cv.education?.degree || ''}</strong></p>
-            <p>${cv.education?.institution || ''} ${cv.education?.year ? '(' + cv.education.year + ')' : ''}</p>
-          </div>
+          const hasExp1 = cv.experience && cv.experience.jobTitle;
+          const hasExp2 = cv.experience2 && cv.experience2.jobTitle;
 
-          ${skillsList ? `<div class="cv-section"><h3>Skills</h3><div class="skills-wrap">${skillsList}</div></div>` : ''}
+          if (hasExp1 || hasExp2) {
+            rightCol += `<div class="cv-section"><h3>Work History</h3>`;
+            if (hasExp1) {
+              rightCol += `<div class="sidebar-job">
+                <p class="job-title">${cv.experience.jobTitle} ${cv.experience.period ? `<span class="job-period">${cv.experience.period}</span>` : ''}</p>
+                <p class="job-company">${cv.experience.company || ''}</p>
+                <p>${cv.experience.description || ''}</p>
+              </div>`;
+            }
+            if (hasExp2) {
+              rightCol += `<div class="sidebar-job">
+                <p class="job-title">${cv.experience2.jobTitle} ${cv.experience2.period ? `<span class="job-period">${cv.experience2.period}</span>` : ''}</p>
+                <p class="job-company">${cv.experience2.company || ''}</p>
+                <p>${cv.experience2.description || ''}</p>
+              </div>`;
+            }
+            rightCol += `</div>`;
+          }
+          rightCol += `</div>`;
 
-          ${cv.experience?.jobTitle ? `
-          <div class="cv-section">
-            <h3>Experience</h3>
-            <p><strong>${cv.experience.jobTitle}</strong> - ${cv.experience.company || ''}</p>
-            <p>${cv.experience.description || ''}</p>
-          </div>` : ''}
+          sheet.innerHTML = leftCol + rightCol;
 
-          ${cv.project?.name ? `
-          <div class="cv-section">
-            <h3>Projects</h3>
-            <p><strong>${cv.project.name}</strong></p>
-            <p>${cv.project.description || ''}</p>
-          </div>` : ''}
-        `;
+        } else {
+          const skillsList = cv.skills ? cv.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : '';
+          const hasExp1 = cv.experience && cv.experience.jobTitle;
+          const hasExp2 = cv.experience2 && cv.experience2.jobTitle;
+          const hasRef = cv.reference && cv.reference.name;
+
+          sheet.innerHTML = `
+            <div class="cv-header">
+              <h1>${cv.fullName || ''}</h1>
+              <p>${cv.email || ''} | ${cv.phone || ''} | ${cv.address || ''}</p>
+            </div>
+
+            ${cv.summary ? `<div class="cv-section"><h3>Summary</h3><p>${cv.summary}</p></div>` : ''}
+
+            <div class="cv-section">
+              <h3>Education</h3>
+              <p><strong>${(cv.education && cv.education.degree) || ''}</strong></p>
+              <p>${(cv.education && cv.education.institution) || ''} ${(cv.education && cv.education.year) ? '(' + cv.education.year + ')' : ''}</p>
+            </div>
+
+            ${skillsList ? `<div class="cv-section"><h3>Skills</h3><div class="skills-wrap">${skillsList}</div></div>` : ''}
+
+            ${hasExp1 ? `
+            <div class="cv-section">
+              <h3>Experience</h3>
+              <p><strong>${cv.experience.jobTitle}</strong> - ${cv.experience.company || ''} ${cv.experience.period ? '(' + cv.experience.period + ')' : ''}</p>
+              <p>${cv.experience.description || ''}</p>
+            </div>` : ''}
+
+            ${hasExp2 ? `
+            <div class="cv-section">
+              <p><strong>${cv.experience2.jobTitle}</strong> - ${cv.experience2.company || ''} ${cv.experience2.period ? '(' + cv.experience2.period + ')' : ''}</p>
+              <p>${cv.experience2.description || ''}</p>
+            </div>` : ''}
+
+            ${hasRef ? `
+            <div class="cv-section">
+              <h3>Reference</h3>
+              <p><strong>${cv.reference.name}</strong> ${cv.reference.title ? '- ' + cv.reference.title : ''}</p>
+              <p>${cv.reference.email || ''} ${cv.reference.phone ? '| ' + cv.reference.phone : ''}</p>
+            </div>` : ''}
+          `;
+        }
       }).catch((error) => {
         document.getElementById('cvSheet').innerHTML = "Error: " + error.message;
       });
