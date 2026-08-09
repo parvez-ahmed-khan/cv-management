@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - CV Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="admin-wrapper">
+    <div class="preview-toolbar">
+      <a href="dashboard.html" class="back-link">Back to Dashboard</a>
+    </div>
+
+    <div class="admin-panel">
+      <h2>Admin Panel - All CVs</h2>
+      <p id="statusMsg">Checking access...</p>
+      <div id="cvList"></div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Check if this user is an admin
+      db.collection('users').doc(user.uid).get().then((userDoc) => {
+        const isAdmin = userDoc.exists && userDoc.data().isAdmin === true;
+
+        if (!isAdmin) {
+          document.getElementById('statusMsg').textContent = "Access denied. Admins only.";
+          return;
+        }
+
+        document.getElementById('statusMsg').textContent = "";
+        loadAllCVs();
+      });
+    });
+
+    function loadAllCVs() {
+      const listEl = document.getElementById('cvList');
+
+      db.collection('cvs').get().then((snapshot) => {
+        if (snapshot.empty) {
+          listEl.innerHTML = "<p>No CVs found yet.</p>";
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach((doc) => {
+          const cv = doc.data();
+          html += `
+            <div class="admin-cv-row">
+              <div>
+                <strong>${cv.fullName || 'No name'}</strong>
+                <p>${cv.email || ''} | ${cv.phone || ''}</p>
+              </div>
+              <button onclick="deleteAnyCV('${doc.id}')" class="btn-small btn-danger">Delete</button>
+            </div>
+          `;
+        });
+        listEl.innerHTML = html;
+      });
+    }
+
+    function deleteAnyCV(uid) {
+      if (!confirm("Delete this user's CV permanently?")) return;
+
+      db.collection('cvs').doc(uid).delete().then(() => {
+        loadAllCVs();
+      }).catch((error) => {
+        alert("Error: " + error.message);
+      });
+    }
+  </script>
+</body>
+</html>

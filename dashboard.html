@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - CV Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="dash-wrapper">
+    <div class="dash-topbar">
+      <h1>CV Management System</h1>
+      <div class="dash-user">
+        <span id="userName">User</span>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="dash-welcome">
+      <h2>Welcome back!</h2>
+      <p>Manage your CV, explore templates, or check your profile below.</p>
+    </div>
+
+    <div class="dash-cards">
+      <a href="create-cv.html" class="dash-card">
+        <div class="dash-card-icon icon-create">+</div>
+        <h3>Create new CV</h3>
+        <p>Start a fresh CV with our step-by-step builder and live preview.</p>
+      </a>
+
+      <a href="preview-cv.html" class="dash-card">
+        <div class="dash-card-icon icon-view">&#128065;</div>
+        <h3>View / preview CV</h3>
+        <p>See your saved CV, print it, or download it as a PDF.</p>
+      </a>
+
+      <a href="update-cv.html" class="dash-card">
+        <div class="dash-card-icon icon-edit">&#9998;</div>
+        <h3>Edit CV</h3>
+        <p>Update your existing information or switch templates anytime.</p>
+      </a>
+
+      <a href="admin.html" class="dash-card" id="adminCard" style="display:none;">
+        <div class="dash-card-icon icon-admin">&#9881;</div>
+        <h3>Admin panel</h3>
+        <p>View and manage all users' CVs (admin access only).</p>
+      </a>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      document.getElementById('userName').textContent = user.email;
+
+      db.collection('users').doc(user.uid).get().then((doc) => {
+        if (doc.exists && doc.data().isAdmin === true) {
+          document.getElementById('adminCard').style.display = 'block';
+        }
+      });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      auth.signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - CV Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="split-container">
+    <div class="split-brand">
+      <h1>CV Management System</h1>
+      <p>Build, manage, and download professional CVs in minutes. Create your account and get started today.</p>
+      <ul class="brand-features">
+        <li>Multiple professional templates</li>
+        <li>Live preview as you type</li>
+        <li>Download as PDF anytime</li>
+      </ul>
+    </div>
+
+    <div class="split-form">
+      <div class="auth-box">
+        <h2>Create your account</h2>
+        <form id="registerForm" novalidate>
+          <label>Full name</label>
+          <input type="text" id="fullName" placeholder="e.g. Md. Parvez Ahmed Khan" required>
+          <label>Email</label>
+          <input type="email" id="email" placeholder="you@example.com" required>
+          <label>Password</label>
+          <input type="password" id="password" placeholder="At least 6 characters" required>
+          <button type="submit">Create account</button>
+        </form>
+        <p id="message"></p>
+        <p class="auth-switch">Already have an account? <a href="login.html">Login</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const messageEl = document.getElementById('message');
+
+      if (!fullName || !email || !password) {
+        messageEl.textContent = "Please fill in all fields.";
+        messageEl.style.color = "red";
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          return db.collection('users').doc(user.uid).set({
+            fullName: fullName,
+            email: email,
+            createdAt: new Date()
+          });
+        })
+        .then(() => {
+          messageEl.textContent = "Account created! Redirecting to login...";
+          messageEl.style.color = "green";
+          setTimeout(() => window.location.href = "login.html", 1500);
+        })
+        .catch((error) => {
+          messageEl.textContent = "Error: " + error.message;
+          messageEl.style.color = "red";
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CV Preview - CV Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="preview-wrapper">
+    <div class="preview-toolbar">
+      <a href="dashboard.html" class="back-link">Back to Dashboard</a>
+      <div>
+        <a href="update-cv.html" class="btn-small">Edit CV</a>
+        <button onclick="window.print()" class="btn-small">Print / Download PDF</button>
+        <button onclick="deleteCV()" class="btn-small btn-danger">Delete CV</button>
+      </div>
+    </div>
+
+    <div class="cv-sheet" id="cvSheet">
+      <p id="loadingMsg">Loading your CV...</p>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      db.collection('cvs').doc(user.uid).get().then((doc) => {
+        const sheet = document.getElementById('cvSheet');
+
+        if (!doc.exists) {
+          sheet.innerHTML = "<p>You haven't created a CV yet. <a href='create-cv.html'>Create one now</a>.</p>";
+          return;
+        }
+
+        const cv = doc.data();
+        sheet.className = 'cv-sheet template-' + (cv.template || 'modern');
+
+        const skillsList = cv.skills ? cv.skills.split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : '';
+
+        sheet.innerHTML = `
+          <div class="cv-header">
+            <h1>${cv.fullName || ''}</h1>
+            <p>${cv.email || ''} | ${cv.phone || ''} | ${cv.address || ''}</p>
+          </div>
+
+          ${cv.summary ? `<div class="cv-section"><h3>Summary</h3><p>${cv.summary}</p></div>` : ''}
+
+          <div class="cv-section">
+            <h3>Education</h3>
+            <p><strong>${cv.education?.degree || ''}</strong></p>
+            <p>${cv.education?.institution || ''} ${cv.education?.year ? '(' + cv.education.year + ')' : ''}</p>
+          </div>
+
+          ${skillsList ? `<div class="cv-section"><h3>Skills</h3><div class="skills-wrap">${skillsList}</div></div>` : ''}
+
+          ${cv.experience?.jobTitle ? `
+          <div class="cv-section">
+            <h3>Experience</h3>
+            <p><strong>${cv.experience.jobTitle}</strong> - ${cv.experience.company || ''}</p>
+            <p>${cv.experience.description || ''}</p>
+          </div>` : ''}
+
+          ${cv.project?.name ? `
+          <div class="cv-section">
+            <h3>Projects</h3>
+            <p><strong>${cv.project.name}</strong></p>
+            <p>${cv.project.description || ''}</p>
+          </div>` : ''}
+        `;
+      }).catch((error) => {
+        document.getElementById('cvSheet').innerHTML = "Error: " + error.message;
+      });
+    });
+
+    function deleteCV() {
+      if (!confirm("Are you sure you want to delete your CV? This cannot be undone.")) {
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) return;
+
+      db.collection('cvs').doc(user.uid).delete()
+        .then(() => {
+          alert("CV deleted successfully.");
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          alert("Error: " + error.message);
+        });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create CV - CV Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="builder-wrapper">
+    <div class="preview-toolbar">
+      <a href="dashboard.html" class="back-link">Back to Dashboard</a>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-step active" data-step="1"><span>1</span>Template</div>
+      <div class="progress-step" data-step="2"><span>2</span>Personal</div>
+      <div class="progress-step" data-step="3"><span>3</span>Education</div>
+      <div class="progress-step" data-step="4"><span>4</span>Skills & Work</div>
+      <div class="progress-step" data-step="5"><span>5</span>Projects</div>
+      <div class="progress-step" data-step="6"><span>6</span>Review</div>
+    </div>
+
+    <div class="builder-body">
+      <!-- LEFT: Form steps -->
+      <div class="builder-form">
+        <form id="cvForm" novalidate>
+
+          <!-- STEP 1: Template selection -->
+          <div class="form-step active" id="step-1">
+            <h3>Choose a template</h3>
+            <div class="template-options">
+              <div class="template-card selected" data-template="modern">
+                <div class="template-thumb thumb-modern"></div>
+                <p>Modern</p>
+              </div>
+              <div class="template-card" data-template="classic">
+                <div class="template-thumb thumb-classic"></div>
+                <p>Classic</p>
+              </div>
+              <div class="template-card" data-template="minimal">
+                <div class="template-thumb thumb-minimal"></div>
+                <p>Minimal</p>
+              </div>
+            </div>
+            <input type="hidden" id="selectedTemplate" value="modern">
+          </div>
+
+          <!-- STEP 2: Personal Info -->
+          <div class="form-step" id="step-2">
+            <h3>Personal information</h3>
+            <input type="text" id="fullName" placeholder="Full Name" required>
+            <input type="email" id="cvEmail" placeholder="Email" required>
+            <input type="text" id="phone" placeholder="Phone Number" required>
+            <input type="text" id="address" placeholder="Address">
+            <textarea id="summary" placeholder="Short professional summary" rows="3"></textarea>
+          </div>
+
+          <!-- STEP 3: Education -->
+          <div class="form-step" id="step-3">
+            <h3>Education</h3>
+            <input type="text" id="degree" placeholder="Degree (e.g. BSc in CSE)" required>
+            <input type="text" id="institution" placeholder="Institution Name" required>
+            <input type="text" id="eduYear" placeholder="Year (e.g. 2023 - 2027)">
+          </div>
+
+          <!-- STEP 4: Skills & Experience -->
+          <div class="form-step" id="step-4">
+            <h3>Skills & work experience</h3>
+            <input type="text" id="skills" placeholder="Skills (comma separated)">
+            <input type="text" id="jobTitle" placeholder="Job Title">
+            <input type="text" id="company" placeholder="Company Name">
+            <textarea id="jobDesc" placeholder="Responsibilities" rows="3"></textarea>
+          </div>
+
+          <!-- STEP 5: Projects -->
+          <div class="form-step" id="step-5">
+            <h3>Projects</h3>
+            <input type="text" id="projectName" placeholder="Project Name">
+            <textarea id="projectDesc" placeholder="Project Description" rows="3"></textarea>
+          </div>
+
+          <!-- STEP 6: Review -->
+          <div class="form-step" id="step-6">
+            <h3>Review & save</h3>
+            <p class="review-note">Check the preview on the right. If everything looks good, click Save CV.</p>
+          </div>
+
+          <div class="step-nav">
+            <button type="button" id="prevBtn" class="btn-secondary" disabled>Back</button>
+            <button type="button" id="nextBtn" class="btn-primary-nav">Next</button>
+            <button type="submit" id="saveBtn" class="btn-primary-nav" style="display:none;">Save CV</button>
+          </div>
+        </form>
+        <p id="message"></p>
+      </div>
+
+      <!-- RIGHT: Live preview -->
+      <div class="builder-preview">
+        <p class="preview-label">Live preview</p>
+        <div class="cv-sheet" id="livePreview">
+          <p style="text-align:center; color:#999;">Your CV preview will appear here as you type.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/cv-builder.js"></script>
+</body>
+</html>
