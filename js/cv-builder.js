@@ -23,7 +23,20 @@ function showStep(step) {
   saveBtn.style.display = (step === totalSteps) ? 'block' : 'none';
 }
 
+function validateStep(step) {
+  const stepEl = document.getElementById('step-' + step);
+  const requiredFields = stepEl.querySelectorAll('[required]');
+  for (const field of requiredFields) {
+    if (!field.checkValidity()) {
+      field.reportValidity();
+      return false;
+    }
+  }
+  return true;
+}
+
 nextBtn.addEventListener('click', () => {
+  if (!validateStep(currentStep)) return;
   if (currentStep < totalSteps) {
     currentStep++;
     showStep(currentStep);
