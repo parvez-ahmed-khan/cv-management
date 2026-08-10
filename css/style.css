@@ -1034,3 +1034,54 @@ body:has(.dash-wrapper) {
     width: 100%;
   }
 }
+/* ===== Fix: Admin panel row overflow ===== */
+.admin-cv-row {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-cv-row > div {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.admin-cv-row strong,
+.admin-cv-row p {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.admin-cv-row .btn-small {
+  flex-shrink: 0;
+  margin-left: 0;
+}
+
+/* ===== Fix: Sidebar template printing differently than preview ===== */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  .template-sidebar {
+    display: flex !important;
+    flex-direction: row !important;
+  }
+
+  .template-sidebar .sidebar-left {
+    width: 34% !important;
+    flex-shrink: 0;
+  }
+
+  .template-sidebar .sidebar-right {
+    width: 66% !important;
+  }
+
+  .cv-sheet {
+    box-shadow: none !important;
+  }
+}
