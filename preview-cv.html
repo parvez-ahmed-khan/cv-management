@@ -10,7 +10,7 @@
   <div class="preview-wrapper">
     <div class="preview-toolbar">
       <a href="dashboard.html" class="back-link">Back to Dashboard</a>
-      <div>
+      <div id="actionButtons" style="display:none;">
         <a href="update-cv.html" class="btn-small">Edit CV</a>
         <button onclick="window.print()" class="btn-small">Print / Download PDF</button>
         <button onclick="deleteCV()" class="btn-small btn-danger">Delete CV</button>
@@ -28,6 +28,8 @@
   <script src="js/firebase-config.js"></script>
 
   <script>
+    let cvExists = false;
+
     auth.onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "login.html";
@@ -38,9 +40,14 @@
         const sheet = document.getElementById('cvSheet');
 
         if (!doc.exists) {
+          cvExists = false;
+          document.getElementById('actionButtons').style.display = 'none';
           sheet.innerHTML = "<p>You haven't created a CV yet. <a href='create-cv.html'>Create one now</a>.</p>";
           return;
         }
+
+        cvExists = true;
+        document.getElementById('actionButtons').style.display = 'flex';
 
         const cv = doc.data();
         sheet.className = 'cv-sheet template-' + (cv.template || 'modern');
@@ -147,6 +154,11 @@
     });
 
     function deleteCV() {
+      if (!cvExists) {
+        alert("There is no CV to delete.");
+        return;
+      }
+
       if (!confirm("Are you sure you want to delete your CV? This cannot be undone.")) {
         return;
       }
